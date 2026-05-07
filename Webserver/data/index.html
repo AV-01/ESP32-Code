@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+    body {
+  font-family:sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: #111;
+  margin-bottom: 0.5em;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  font-family: inherit;
+}
+button{
+    margin-top: 10px;
+}
+</style>
+
+<body>
+<h1>ESP32 Homework Solver</h1>
+
+<label>Gemini API key:</label>
+<input type="password" id="api_key" placeholder="Insert API Key Here"></input>
+
+
+<label>Upload Homework Image:</label>
+<input type="file" id="homeworkImage"  accept="image/*" /></input>
+
+<button id="submit" onclick="solveHomework()">Submit</button>
+</body>
+
+<script>
+    async function solveHomework(){
+        const apiKey = document.getElementById("api_key").value;
+        const fileData = document.getElementById("homeworkImage");
+        
+        if(apiKey === ""){
+            return alert("Insert an API Key!");
+        }
+        if(fileData.files.length === 0){
+            return alert("Upload some homework!");
+        }
+        
+    }
+</script>
+</html>
