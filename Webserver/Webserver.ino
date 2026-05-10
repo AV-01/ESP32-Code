@@ -156,6 +156,23 @@ void setup() {
       }
   });
 
+  server.on("/get-api-key", []{
+    String api_key = preferences.getString("api_key", "");
+    if(hasWifi && api_key != ""){
+      String json_result = "{ \"api_key\": \"" + api_key + "\"}";
+      server.send(200, "application/json", json_result);
+    }
+    else{
+      server.send(400, "text/plain", "Failed to fetch API Key, please set up WiFi and key.");
+    }
+  });
+
+  server.on("/test", []{
+    File file = LittleFS.open("/test_endpoint.html", "r");
+    server.streamFile(file, "text/html");
+    file.close();
+  });
+
   server.begin();
 }
 
