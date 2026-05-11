@@ -27,7 +27,7 @@ WebServer server(80);
 Preferences preferences;
 bool hasWifi = true;
 
-void drawCentreString(const char *buf, int x, int y){
+void drawCenterString(const char *buf, int x, int y){
     int16_t x1, y1;
     uint16_t w, h;
     display.getTextBounds(buf, x, y, &x1, &y1, &w, &h); //calc width of new string
@@ -49,16 +49,17 @@ void displayQRCode(esp_qrcode_handle_t qrcode) {
       }
     }
   }
-
-  // Display title
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  drawCentreString("Homework Machine", 64, 8);
-
   display.display();
 }
 void setup() {
   Serial.begin(115200);
+
+  // Set up Display
+  Wire.begin(SDA_PIN, SCL_PIN);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  drawCenterString("Booting up...", 64, 32);
+  display.display();
 
   if(!LittleFS.begin(true)){
     Serial.println("Error occured during LittleFS init");
@@ -90,29 +91,44 @@ void setup() {
     if(WiFi.status() == WL_CONNECTED){
       Serial.println("Connected! IP address: ");
       Serial.println(WiFi.localIP());
+
+      display.clearDisplay();
+      esp_qrcode_config_t cfg = ESP_QRCODE_CONFIG_DEFAULT();
+      cfg.display_func = displayQRCode;
+      String ipStr = "http://" + WiFi.localIP().toString();
+      // Display title
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      drawCenterString(ipStr.c_str(), 64, 8);
+      esp_qrcode_generate(&cfg, ipStr.c_str());
     }
     else{
       Serial.println("Failed to connect. Converting to Access Point...");
       hasWifi = false;
+
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP("ESP32-SETUP");
+      Serial.print("AP IP address: ");
+      Serial.println(WiFi.softAPIP());
+
+      display.clearDisplay();
+      esp_qrcode_config_t cfg = ESP_QRCODE_CONFIG_DEFAULT();
+      cfg.display_func = displayQRCode;
+      String ipStr = "http://" + WiFi.softAPIP().toString();
+      // Display title
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      drawCenterString(ipStr.c_str(), 64, 8);
+      esp_qrcode_generate(&cfg, ipStr.c_str());
     }
   }
 
-
-  // QR Code generation begins here
-  // Wire.begin(SDA_PIN, SCL_PIN);
-  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  // display.clearDisplay();
-  // esp_qrcode_config_t cfg = ESP_QRCODE_CONFIG_DEFAULT();
-  // cfg.display_func = displayQRCode;
-  // String ipStr = "http://" + WiFi.localIP().toString();
-  // esp_qrcode_generate(&cfg, ipStr.c_str());
-
-  if(hasWifi == false){
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP("ESP32-SETUP");
-    Serial.print("AP IP address: ");
-    Serial.println(WiFi.softAPIP());
-  }
+  // if(hasWifi == false){
+  //   WiFi.mode(WIFI_AP);
+  //   WiFi.softAP("ESP32-SETUP");
+  //   Serial.print("AP IP address: ");
+  //   Serial.println(WiFi.softAPIP());
+  // }
 
   server.on("/", []() {
       File file = LittleFS.open((hasWifi) ? "/index.html" : "/setup.html", "r");
@@ -131,6 +147,12 @@ void setup() {
       }
   });
 
+  server.on("/setup", []{
+    File file = LittleFS.open("/setup.html", "r");
+    server.streamFile(file, "text/html");
+    file.close();
+    Serial.println("Accessed setup.html");
+  });
   server.on("/save-config", []{
       if(server.hasArg("wifi_name") && server.hasArg("api_key") && server.hasArg("wifi_password")){
         preferences.putString("ssid", server.arg("wifi_name"));
