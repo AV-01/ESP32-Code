@@ -33,12 +33,12 @@ button{
 <body>
 <h1>Homework Solver</h1>
 
-<label>Gemini API key:</label>
-<input type="password" id="api_key" placeholder="Insert API Key Here"></input>
+<label>AI Prompt: </label>
+<input type="text" id="prompt" placeholder="This prompt gets sent to the AI with your files" value="Analyze attached homework images. Provide short, brief answers to the questions. Write like a high schooler."></input>
 
 
 <label>Upload Homework Image:</label>
-<input type="file" id="homeworkImage"  accept="image/*" /></input>
+<input type="file" id="homeworkImage" multiple accept="image/*" /></input>
 
 <button id="submit" onclick="solveHomework()">Submit</button>
 
@@ -46,10 +46,29 @@ button{
 </body>
 
 <script>
+
+    async function fileToBase64(file) {
+        return new Promise((resolve, reject) =>{
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () =>{
+                const base64Data = reader.result.split(',')[1];
+                resolve({
+                    inline_data: {
+                        mime_type: file.type,
+                        data: base64Data
+                    }
+                });
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
     async function solveHomework(){
         const keyResponse = await fetch("/get-api-key");
         const keyData = await keyResponse.json();
         const apiKey = keyData.api_key;
+
+        const prompt = document.getElementById("prompt").value;
 
         if(apiKey === ""){
             return alert("Insert an API Key!");
@@ -58,17 +77,28 @@ button{
         const fileData = document.getElementById("homeworkImage");
         const responseDiv = document.getElementById("response");
 
-        // if(fileData.files.length === 0){
-        //     return alert("Upload some homework!");
-        // }
+        if(fileData.files.length === 0){
+            return alert("Upload some homework!");
+        }
         
         responseDiv.innerText = "Solving...";
 
+        const parts = [{text:prompt}];
+
+        for(let i = 0; i < fileData.files.length; i++){
+            try{
+                const imgData = await fileToBase64(fileData.files[i]);
+                parts.push(imgData);
+            }
+            catch(e){
+                console.error("Error processing file", e);
+                responseDiv.innerText = "Error proceessing images.";
+                return alert("Error processing images. Please try again.");
+            }
+        }
         const payload = {
             contents: [{
-                parts:[
-                    {text:"Write a funny joke about pizza."}
-                ]
+                parts: parts
             }]
         }
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -80,10 +110,18 @@ button{
         );
         const result = await response.json();
 
+
         console.log(result);
-        console.log(result.candidates[0].content.parts[0].text);
-        // const responseDiv = getElementById('response');
-        responseDiv.innerText = result.candidates[0].content.parts[0].text;
+
+        try{
+            console.log(result.candidates[0].content.parts[0].text);
+            // const responseDiv = getElementById('response');
+            responseDiv.innerText = result.candidates[0].content.parts[0].text;
+        }catch(e){
+            console.error("Error during API call.", e);
+            responseDiv.innerText = "An error occured with the API. Please try again";
+        }
+
     }
 </script>
 </html>

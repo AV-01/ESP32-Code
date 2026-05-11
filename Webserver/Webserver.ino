@@ -3,16 +3,12 @@
 #include <WebServer.h>
 #include <WiFi.h>
 
-// for getting wifi and api key
-// #include "secrets.h"
-// to replace hardcoded stuff
 #include <Preferences.h>
 
 
 // for displaying the HTML files. Note: could remove and just store all data here
 #include <FS.h>
 #include <LittleFS.h>
-// #include <FFat.h>
 
 // for QR code display
 #include <Wire.h>
@@ -74,8 +70,6 @@ void setup() {
   String password = preferences.getString("password","");
   Serial.print("SSID: ");
   Serial.println(ssid);
-  Serial.print("Password: ");
-  Serial.println(password);
   if(ssid == ""){
     Serial.println("No SSID found. Entering AP mode.");
     hasWifi = false;
