@@ -5,7 +5,6 @@
 
 #include <Preferences.h>
 
-
 // for displaying the HTML files. Note: could remove and just store all data here
 #include <FS.h>
 #include <LittleFS.h>
@@ -27,6 +26,25 @@ WebServer server(80);
 Preferences preferences;
 bool hasWifi = true;
 
+// std::vector<String> displayMessages(5);
+
+// void addDisplayMessages(String msg){
+//   displayMessages.push_back(msg);
+//   if(displayMessages.size() > 5){
+//     displayMessages.erase(displayMessages.begin());
+//   }
+
+//   display.clearDisplay();
+  // display.setTextSize(1);
+  // display.setTextColor(WHITE);
+
+//   for(int i = 0; i < displayMessages.size(); i ++){
+//     display.setCursor(70, i * 12);
+//     display.print(displayMessages[i]);
+//   }
+//   display.display();
+// }
+
 void drawCenterString(const char *buf, int x, int y){
     int16_t x1, y1;
     uint16_t w, h;
@@ -38,7 +56,7 @@ void drawCenterString(const char *buf, int x, int y){
 void displayQRCode(esp_qrcode_handle_t qrcode) {
   int size = esp_qrcode_get_size(qrcode);
   int scale = 2; // Scale up the pixels so it is readable
-  int xOffset = (SCREEN_WIDTH - (size * scale)) / 2; // Center horizontally
+  int xOffset = (SCREEN_WIDTH - (size * scale)) / 2 - 35; // Center horizontally
   int yOffset = 9 + (SCREEN_HEIGHT - (size * scale)) / 2; // Center vertically
 
   for (int y = 0; y < size; y++) {
@@ -93,13 +111,28 @@ void setup() {
       Serial.println(WiFi.localIP());
 
       display.clearDisplay();
+
       esp_qrcode_config_t cfg = ESP_QRCODE_CONFIG_DEFAULT();
       cfg.display_func = displayQRCode;
       String ipStr = "http://" + WiFi.localIP().toString();
       // Display title
       display.setTextSize(1);
       display.setTextColor(WHITE);
+
       drawCenterString(ipStr.c_str(), 64, 8);
+
+      display.setCursor(55 , 16);
+      // one line fits "Hello World"
+      // "Go to link"
+      // "Hello World"
+      display.print("1. Join WiFi");
+      display.setCursor(55 , 26);
+      display.print("2. Scan QR");
+      display.setCursor(55 , 36);
+      display.print("3. Do form");
+      display.setCursor(55 , 46);
+      display.print("4. HW done!");
+
       esp_qrcode_generate(&cfg, ipStr.c_str());
     }
     else{
@@ -119,6 +152,21 @@ void setup() {
       display.setTextSize(1);
       display.setTextColor(WHITE);
       drawCenterString(ipStr.c_str(), 64, 8);
+
+      display.setCursor(55 , 16);
+      // one line fits "Hello World"
+      // "Go to link"
+      // "Hello World"
+      display.print("1. Join WiFi");
+      display.setCursor(55 , 26);
+      display.print("ESP32-SETUP");
+      display.setCursor(55 , 36);
+      display.print("2. Scan QR");
+      display.setCursor(55 , 46);
+      display.print("3. Do form");
+      display.setCursor(55 , 56);
+      display.print("4. Restart!");
+
       esp_qrcode_generate(&cfg, ipStr.c_str());
     }
   }
