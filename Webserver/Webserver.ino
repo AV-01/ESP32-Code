@@ -179,6 +179,7 @@ void setup() {
   // }
 
   server.on("/", []() {
+      server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       File file = LittleFS.open((hasWifi) ? "/index.html" : "/setup.html", "r");
       if(!file){
         server.send(500, "text/plain", "File not found!");
@@ -196,6 +197,7 @@ void setup() {
   });
 
   server.on("/setup", []{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     File file = LittleFS.open("/setup.html", "r");
     server.streamFile(file, "text/html");
     file.close();
@@ -221,6 +223,7 @@ void setup() {
   });
 
   server.on("/get-api-key", []{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     String api_key = preferences.getString("api_key", "");
     if(hasWifi && api_key != ""){
       String json_result = "{ \"api_key\": \"" + api_key + "\"}";
@@ -231,12 +234,14 @@ void setup() {
     }
   });
 
-  server.on("/test", []{
-    File file = LittleFS.open("/test_endpoint.html", "r");
-    server.streamFile(file, "text/html");
-    file.close();
-  });
+  server.serveStatic("/fonts/", LittleFS, "/fonts/");
 
+  server.serveStatic("/font_engine.js", LittleFS, "/font_engine.js");
+  
+  server.serveStatic("/initialize_gcode.txt", LittleFS, "/initialize_gcode.txt");
+  server.serveStatic("/end_gcode.txt", LittleFS, "/end_gcode.txt");
+
+  server.enableCORS(true);
   server.begin();
 }
 

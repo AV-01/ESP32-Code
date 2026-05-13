@@ -1,0 +1,15 @@
+{
+    "X_MIN": 80.0,
+    "X_MAX": 230.0,
+    "Y_MIN": 40.0,
+    "Y_MAX": 220.0,
+    "Z_SAFE": 10.0,
+    "Z_DRAW": 1.52,
+    "F_TRAVEL": 3000,
+    "F_DRAW": 2000,
+    "F_Z": 1000,
+    "LINE_SPACING": 7.1,
+    "TOP_MARGIN": 10.0,
+    "FLOAT_OFFSET": 2.5,
+    "LEFT_MARGIN": 5.0
+}
