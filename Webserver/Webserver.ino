@@ -234,6 +234,44 @@ void setup() {
     }
   });
 
+  server.on("/settings", []{
+    server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    File file = LittleFS.open("/settings.html", "r");
+    if(!file){
+      server.send(400, "text/plain", "file not found");
+      return;
+    }
+    server.streamFile(file, "text/html");
+    file.close();
+    Serial.println("Accessed settings.html");
+  });
+
+  server.on("/save-settings", HTTP_POST, []{
+    String setting_objects[13] = {"X_MIN", "X_MAX", "Y_MIN", "Y_MAX", "Z_SAFE", "Z_DRAW", "F_TRAVEL", "F_DRAW", "F_Z", "LINE_SPACING", "TOP_MARGIN", "FLOAT_OFFSET", "LEFT_MARGIN"};
+    String json = "{\n";
+    for(String i : setting_objects){
+      if(!server.hasArg(i)){
+        server.send(400, "text/plain", "missing argument: " + i);
+        return;
+      }
+      json += "\"" + i + "\": " + server.arg(i) + ",\n";
+    }
+    
+    // json = json.substr(0, json.size()-1);
+    json.remove(json.length() - 1);
+    json += "}";
+    File file = LittleFS.open("/fonts/settings.json", "w");
+    if(!file){
+      server.send(400, "text/plain", "failed to open settings file");
+      return;
+    }
+
+    file.print(json);
+    file.close();
+    Serial.println("Updated settings.json");
+    server.send(200, "text/plain", "updated settings.json");
+  });
+
   server.serveStatic("/fonts/", LittleFS, "/fonts/");
 
   server.serveStatic("/font_engine.js", LittleFS, "/font_engine.js");

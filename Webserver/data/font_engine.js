@@ -5,7 +5,7 @@ let initGCode = "";
 let endGCode = "";
 async function loadSettings(){
     try{
-        const response1 = await fetch('/fonts/default_settings.json');
+        const response1 = await fetch('/fonts/settings.json');
         if(response1.ok){
             settings = await response1.json();
         }
