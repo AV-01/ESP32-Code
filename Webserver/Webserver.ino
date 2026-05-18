@@ -9,6 +9,11 @@
 #include <FS.h>
 #include <LittleFS.h>
 
+// for SD card reader
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+
 // for QR code display
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -19,6 +24,11 @@
 #define SCL_PIN 9
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
+
+#define PIN_MISO 13
+#define PIN_MOSI 11
+#define PIN_SCK 12
+#define PIN_CS 10
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 WebServer server(80);
@@ -78,6 +88,15 @@ void setup() {
   display.clearDisplay();
   drawCenterString("Booting up...", 64, 32);
   display.display();
+
+  SPI.begin(PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);
+
+  if(!SD.begin(PIN_CS)){
+    Serial.println("SD Card Mount failed");
+  }
+  else{
+    Serial.println("SD Card Initialized");
+  }
 
   if(!LittleFS.begin(true)){
     Serial.println("Error occured during LittleFS init");
@@ -249,17 +268,22 @@ void setup() {
   server.on("/save-settings", HTTP_POST, []{
     String setting_objects[13] = {"X_MIN", "X_MAX", "Y_MIN", "Y_MAX", "Z_SAFE", "Z_DRAW", "F_TRAVEL", "F_DRAW", "F_Z", "LINE_SPACING", "TOP_MARGIN", "FLOAT_OFFSET", "LEFT_MARGIN"};
     String json = "{\n";
-    for(String i : setting_objects){
-      if(!server.hasArg(i)){
-        server.send(400, "text/plain", "missing argument: " + i);
+    for(int i = 0; i < 13; i++){
+      Stirng curr_param = setting_objects[i];
+      if(!server.hasArg(curr_param)){
+        server.send(400, "text/plain", "missing argument: " + curr_param);
         return;
       }
-      json += "\"" + i + "\": " + server.arg(i) + ",\n";
+      json += "\"" + i + "\": " + server.arg(i);
+      if(j < 12){
+        json += ",\n";
+      }else{
+        json += "\n";
+      }
     }
     
-    // json = json.substr(0, json.size()-1);
-    json.remove(json.length() - 1);
     json += "}";
+    
     File file = LittleFS.open("/fonts/settings.json", "w");
     if(!file){
       server.send(400, "text/plain", "failed to open settings file");
@@ -272,6 +296,26 @@ void setup() {
     server.send(200, "text/plain", "updated settings.json");
   });
 
+
+  server.on("/upload-file", HTTP_POST, []{
+      if(server.hasArg("plain")){
+        String gcode = server.arg("plain");
+        File file = SD.open("/hw_plot.gcode", FILE_WRITE);
+        if(file){
+          file.print(gcode);
+          file.close();
+          Serial.println("gcode succesfully written to card");
+          server.send(200, "text/plain", "succesfully saved gcode to card");
+        }
+        else{
+          Serial.println("failed to open file");
+          server.send(500, "text/plain", "failed to write to SD card");
+        }
+      }
+      else{
+        server.send(400, "text/plain", "no gcode provided");
+      }
+  });
   server.serveStatic("/fonts/", LittleFS, "/fonts/");
 
   server.serveStatic("/font_engine.js", LittleFS, "/font_engine.js");

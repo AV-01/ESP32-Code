@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+    body {
+  font-family:sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: #111;
+  margin-bottom: 0.5em;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  font-family: inherit;
+}
+button{
+    margin-top: 10px;
+}
+</style>
+
+<body>
+<h1>Machine Settings</h1>
+
+<form id="settingsForm" onsubmit="saveSettings(event)">
+<label>X Min</label>
+<input type="number" id="x_min" name="x_min" required></input>
+
+<label>X Max</label>
+<input type="number" id="x_max" name="x_max" required></input>
+
+<label>Y Min</label>
+<input type="number" id="y_min" name="y_min" required></input>
+
+<label>Y Max</label>
+<input type="number" id="y_max" name="y_max" required></input>
+
+<label>Z Safe</label>
+<input type="number" id="y_max" name="y_max" required></input>
+
+<label>Z Draw</label>
+<input type="number" id="z_draw" name="z_draw" required></input>
+
+<label>F Travel</label>
+<input type="number" id="f_travel" name="f_travel" required></input>
+
+<label>F Draw</label>
+<input type="number" id="f_draw" name="f_draw" required></input>
+
+<label>F Z</label>
+<input type="number" id="f_z" name="f_z" required></input>
+
+<label>Line Spacing</label>
+<input type="number" id="line_spacing" name="line_spacing" required></input>
+
+<label>Top Margin</label>
+<input type="number" id="top_margin" name="top_margin" required></input>
+
+<label>Float Offset</label>
+<input type="number" id="float_offset" name="float_offset" required></input>
+
+<label>Left Margin</label>
+<input type="number" id="left_margin" name="left_margin" required></input>
+
+
+<button type="submit" id="saveBtn">Submit</button>
+<div id="status"></div>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async()=>{
+    try{
+      const response = await fetch("/fonst/settings.json", {cache: "no-store"});
+      if(response.ok){
+        const data = await response.json();
+        for(const [key, value] of Object.entries(key)){
+          const input = document.getElementById(key);
+          if(input){
+            input.value = value;
+          }
+        }
+      }else{
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "Failed to load current settings";
+      }
+    }catch(err){
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "Network error loading settings";
+    }
+  });
+
+  async function saveSettings(e){
+    e.preventDefault();
+
+    const form = document.getElementById("settingsForm");
+    const formData = new FormData(form);
+    const data = new URLSearchParams(formData);
+
+    const btn = document.getElementById("saveBtn");
+    const status = document.getElementById("status");
+    btn.textContent = "Saving...";
+    btn.disabled = true;
+    status.textContent = "";
+    try{
+      if(response.ok){
+        status.style.color = "green";
+        status.textContent = "Settings saved!";
+      } else{
+        const errText = await response.text();
+        status.style.color = "red";
+        status.textContent = "Failed to save: " + errText;
+      }
+    } catch(err){
+      status.style.color = "red";
+      status.textContent = "Network error while saving, check console log";
+      console.error("error while saving",err);
+    }finally{
+      btn.textContent = "submit";
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
