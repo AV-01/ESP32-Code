@@ -269,13 +269,13 @@ void setup() {
     String setting_objects[13] = {"X_MIN", "X_MAX", "Y_MIN", "Y_MAX", "Z_SAFE", "Z_DRAW", "F_TRAVEL", "F_DRAW", "F_Z", "LINE_SPACING", "TOP_MARGIN", "FLOAT_OFFSET", "LEFT_MARGIN"};
     String json = "{\n";
     for(int i = 0; i < 13; i++){
-      Stirng curr_param = setting_objects[i];
+      String curr_param = setting_objects[i];
       if(!server.hasArg(curr_param)){
         server.send(400, "text/plain", "missing argument: " + curr_param);
         return;
       }
-      json += "\"" + i + "\": " + server.arg(i);
-      if(j < 12){
+      json += "\"" + curr_param + "\": " + server.arg(curr_param);
+      if(i < 12){
         json += ",\n";
       }else{
         json += "\n";

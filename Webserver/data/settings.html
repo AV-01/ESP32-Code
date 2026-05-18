@@ -35,43 +35,43 @@ button{
 
 <form id="settingsForm" onsubmit="saveSettings(event)">
 <label>X Min</label>
-<input type="number" id="x_min" name="x_min" required></input>
+<input type="number" id="X_MIN" name="X_MIN" required step=".001"></input>
 
 <label>X Max</label>
-<input type="number" id="x_max" name="x_max" required></input>
+<input type="number" id="X_MAX" name="X_MAX" required step=".001"></input>
 
 <label>Y Min</label>
-<input type="number" id="y_min" name="y_min" required></input>
+<input type="number" id="Y_MIN" name="Y_MIN" required step=".001"></input>
 
 <label>Y Max</label>
-<input type="number" id="y_max" name="y_max" required></input>
+<input type="number" id="Y_MAX" name="Y_MAX" required step=".001"></input>
 
 <label>Z Safe</label>
-<input type="number" id="y_max" name="y_max" required></input>
+<input type="number" id="Z_SAFE" name="Z_SAFE" required step=".001"></input>
 
 <label>Z Draw</label>
-<input type="number" id="z_draw" name="z_draw" required></input>
+<input type="number" id="Z_DRAW" name="Z_DRAW" required step=".001"></input>
 
 <label>F Travel</label>
-<input type="number" id="f_travel" name="f_travel" required></input>
+<input type="number" id="F_TRAVEL" name="F_TRAVEL" required step=".001"></input>
 
 <label>F Draw</label>
-<input type="number" id="f_draw" name="f_draw" required></input>
+<input type="number" id="F_DRAW" name="F_DRAW" required step=".001"></input>
 
 <label>F Z</label>
-<input type="number" id="f_z" name="f_z" required></input>
+<input type="number" id="F_Z" name="F_Z" required step=".001"></input>
 
 <label>Line Spacing</label>
-<input type="number" id="line_spacing" name="line_spacing" required></input>
+<input type="number" id="LINE_SPACING" name="LINE_SPACING" required step=".001"></input>
 
 <label>Top Margin</label>
-<input type="number" id="top_margin" name="top_margin" required></input>
+<input type="number" id="TOP_MARGIN" name="TOP_MARGIN" required step=".001"></input>
 
 <label>Float Offset</label>
-<input type="number" id="float_offset" name="float_offset" required></input>
+<input type="number" id="FLOAT_OFFSET" name="FLOAT_OFFSET" required step=".001"></input>
 
 <label>Left Margin</label>
-<input type="number" id="left_margin" name="left_margin" required></input>
+<input type="number" id="LEFT_MARGIN" name="LEFT_MARGIN" required step=".001"></input>
 
 
 <button type="submit" id="saveBtn">Submit</button>
@@ -81,10 +81,10 @@ button{
 <script>
   document.addEventListener("DOMContentLoaded", async()=>{
     try{
-      const response = await fetch("/fonst/settings.json", {cache: "no-store"});
+      const response = await fetch("/fonts/settings.json", {cache: "no-store"});
       if(response.ok){
         const data = await response.json();
-        for(const [key, value] of Object.entries(key)){
+        for(const [key, value] of Object.entries(data)){
           const input = document.getElementById(key);
           if(input){
             input.value = value;
@@ -113,6 +113,13 @@ button{
     btn.disabled = true;
     status.textContent = "";
     try{
+      const response = await fetch("/save-settings", {
+        method:"POST",
+        headers: {
+          "Content-Type" : "application/x-www-form-urlencoded",
+        },
+        body: data.toString()
+      });
       if(response.ok){
         status.style.color = "green";
         status.textContent = "Settings saved!";
