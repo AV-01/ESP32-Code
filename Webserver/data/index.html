@@ -164,14 +164,13 @@ button{
         const folderName = document.getElementById("folderName").value || "HWFolder";
         const fileName = document.getElementById("fileName").value || "HWFile.gcode";
 
-        
+        const fileBlob = new Blob([currentGCode], {type: "text/plain"});
+
         const formData = new FormData();
-        formData.append("folder", folderName);
-        formData.append("file", fileName);
-        formData.append("content", currentGCode);
+        formData.append("file", fileBlob, fileName);
 
         try{
-            const response = await fetch("/upload-file", {
+            const response = await fetch(`/upload-file?folder=${encodeURIComponent(folderName)}`, {
                 method: "POST",
                 body: formData
             });

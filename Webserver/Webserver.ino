@@ -35,7 +35,9 @@ WebServer server(80);
 
 Preferences preferences;
 bool hasWifi = true;
-
+File uploadFile;
+String uploadError = "";
+String uploadPath = "";
 // std::vector<String> displayMessages(5);
 
 // void addDisplayMessages(String msg){
@@ -45,8 +47,8 @@ bool hasWifi = true;
 //   }
 
 //   display.clearDisplay();
-  // display.setTextSize(1);
-  // display.setTextColor(WHITE);
+// display.setTextSize(1);
+// display.setTextColor(WHITE);
 
 //   for(int i = 0; i < displayMessages.size(); i ++){
 //     display.setCursor(70, i * 12);
@@ -55,31 +57,37 @@ bool hasWifi = true;
 //   display.display();
 // }
 
-void drawCenterString(const char *buf, int x, int y){
-    int16_t x1, y1;
-    uint16_t w, h;
-    display.getTextBounds(buf, x, y, &x1, &y1, &w, &h); //calc width of new string
-    display.setCursor(x - w / 2, y);
-    display.print(buf);
+void drawCenterString(const char *buf, int x, int y)
+{
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(buf, x, y, &x1, &y1, &w, &h); // calc width of new string
+  display.setCursor(x - w / 2, y);
+  display.print(buf);
 }
 
-void displayQRCode(esp_qrcode_handle_t qrcode) {
+void displayQRCode(esp_qrcode_handle_t qrcode)
+{
   int size = esp_qrcode_get_size(qrcode);
-  int scale = 2; // Scale up the pixels so it is readable
+  int scale = 2;                                          // Scale up the pixels so it is readable
   int xOffset = (SCREEN_WIDTH - (size * scale)) / 2 - 35; // Center horizontally
   int yOffset = 9 + (SCREEN_HEIGHT - (size * scale)) / 2; // Center vertically
 
-  for (int y = 0; y < size; y++) {
-    for (int x = 0; x < size; x++) {
+  for (int y = 0; y < size; y++)
+  {
+    for (int x = 0; x < size; x++)
+    {
       // esp_qrcode_get_module returns true for a black pixel
-      if (esp_qrcode_get_module(qrcode, x, y)) {
+      if (esp_qrcode_get_module(qrcode, x, y))
+      {
         display.fillRect(xOffset + (x * scale), yOffset + (y * scale), scale, scale, WHITE);
       }
     }
   }
   display.display();
 }
-void setup() {
+void setup()
+{
   Serial.begin(115200);
 
   // Set up Display
@@ -91,34 +99,39 @@ void setup() {
 
   SPI.begin(PIN_SCK, PIN_MISO, PIN_MOSI, PIN_CS);
 
-  if(!LittleFS.begin(true)){
+  if (!LittleFS.begin(true))
+  {
     Serial.println("Error occured during LittleFS init");
     return;
   }
   // Try and load WiFi
-  preferences.begin("my-app", false); 
+  preferences.begin("my-app", false);
   String ssid = preferences.getString("ssid", "");
-  String password = preferences.getString("password","");
+  String password = preferences.getString("password", "");
   Serial.print("SSID: ");
   Serial.println(ssid);
-  if(ssid == ""){
+  if (ssid == "")
+  {
     Serial.println("No SSID found. Entering AP mode.");
     hasWifi = false;
   }
-  else{
+  else
+  {
     // LOAD WIFI SEQUENCE
     Serial.println("Connecting to WiFi: ");
     Serial.println(ssid);
     WiFi.begin(ssid.c_str(), password.c_str());
     int retries = 0;
-    while (WiFi.status() != WL_CONNECTED && retries < 20) {
+    while (WiFi.status() != WL_CONNECTED && retries < 20)
+    {
       delay(500);
       Serial.print(".");
       retries++;
     }
 
     Serial.println("");
-    if(WiFi.status() == WL_CONNECTED){
+    if (WiFi.status() == WL_CONNECTED)
+    {
       Serial.println("Connected! IP address: ");
       Serial.println(WiFi.localIP());
 
@@ -133,21 +146,22 @@ void setup() {
 
       drawCenterString(ipStr.c_str(), 64, 8);
 
-      display.setCursor(55 , 16);
+      display.setCursor(55, 16);
       // one line fits "Hello World"
       // "Go to link"
       // "Hello World"
       display.print("1. Join WiFi");
-      display.setCursor(55 , 26);
+      display.setCursor(55, 26);
       display.print("2. Scan QR");
-      display.setCursor(55 , 36);
+      display.setCursor(55, 36);
       display.print("3. Do form");
-      display.setCursor(55 , 46);
+      display.setCursor(55, 46);
       display.print("4. HW done!");
 
       esp_qrcode_generate(&cfg, ipStr.c_str());
     }
-    else{
+    else
+    {
       Serial.println("Failed to connect. Converting to Access Point...");
       hasWifi = false;
 
@@ -165,18 +179,18 @@ void setup() {
       display.setTextColor(WHITE);
       drawCenterString(ipStr.c_str(), 64, 8);
 
-      display.setCursor(55 , 16);
+      display.setCursor(55, 16);
       // one line fits "Hello World"
       // "Go to link"
       // "Hello World"
       display.print("1. Join WiFi");
-      display.setCursor(55 , 26);
+      display.setCursor(55, 26);
       display.print("ESP32-SETUP");
-      display.setCursor(55 , 36);
+      display.setCursor(55, 36);
       display.print("2. Scan QR");
-      display.setCursor(55 , 46);
+      display.setCursor(55, 46);
       display.print("3. Do form");
-      display.setCursor(55 , 56);
+      display.setCursor(55, 56);
       display.print("4. Restart!");
 
       esp_qrcode_generate(&cfg, ipStr.c_str());
@@ -190,7 +204,8 @@ void setup() {
   //   Serial.println(WiFi.softAPIP());
   // }
 
-  server.on("/", []() {
+  server.on("/", []()
+            {
       server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       File file = LittleFS.open((hasWifi) ? "/index.html" : "/setup.html", "r");
       if(!file){
@@ -205,17 +220,17 @@ void setup() {
       }
       else{
         Serial.println("Accessed setup.html");
-      }
-  });
+      } });
 
-  server.on("/setup", []{
+  server.on("/setup", []
+            {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     File file = LittleFS.open("/setup.html", "r");
     server.streamFile(file, "text/html");
     file.close();
-    Serial.println("Accessed setup.html");
-  });
-  server.on("/save-config", []{
+    Serial.println("Accessed setup.html"); });
+  server.on("/save-config", []
+            {
       if(server.hasArg("wifi_name") && server.hasArg("api_key") && server.hasArg("wifi_password")){
         preferences.putString("ssid", server.arg("wifi_name"));
         preferences.putString("password", server.arg("wifi_password"));
@@ -231,10 +246,10 @@ void setup() {
       else{
         Serial.println("Missing fields");
         server.send(400, "text/plain", "Missing fields");
-      }
-  });
+      } });
 
-  server.on("/get-api-key", []{
+  server.on("/get-api-key", []
+            {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     String api_key = preferences.getString("api_key", "");
     if(hasWifi && api_key != ""){
@@ -243,10 +258,10 @@ void setup() {
     }
     else{
       server.send(400, "text/plain", "Failed to fetch API Key, please set up WiFi and key.");
-    }
-  });
+    } });
 
-  server.on("/settings", []{
+  server.on("/settings", []
+            {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     File file = LittleFS.open("/settings.html", "r");
     if(!file){
@@ -255,10 +270,10 @@ void setup() {
     }
     server.streamFile(file, "text/html");
     file.close();
-    Serial.println("Accessed settings.html");
-  });
+    Serial.println("Accessed settings.html"); });
 
-  server.on("/save-settings", HTTP_POST, []{
+  server.on("/save-settings", HTTP_POST, []
+            {
     String setting_objects[13] = {"X_MIN", "X_MAX", "Y_MIN", "Y_MAX", "Z_SAFE", "Z_DRAW", "F_TRAVEL", "F_DRAW", "F_Z", "LINE_SPACING", "TOP_MARGIN", "FLOAT_OFFSET", "LEFT_MARGIN"};
     String json = "{\n";
     for(int i = 0; i < 13; i++){
@@ -286,75 +301,110 @@ void setup() {
     file.print(json);
     file.close();
     Serial.println("Updated settings.json");
-    server.send(200, "text/plain", "updated settings.json");
-  });
-
+    server.send(200, "text/plain", "updated settings.json"); });
 
   server.on("/upload-file", HTTP_POST, []{
-    if(!server.hasArg("folder") || !server.hasArg("file") || !server.hasArg("content")){
-      server.send(400, "text/plain", "Mising folder, file, or content");
-      return;
+    if (uploadError.length() > 0)
+    {
+      server.send(500, "text/plain", uploadError);
     }
-
-    String folder = server.arg("folder");
-    String filename = server.arg("file");
-    String content = server.arg("content");
-
-    if(filename.length() == 0 || content.length() == 0){
-      server.send(400, "text/plain", "Empty file or content provided");
-      return;
+    else
+    {
+      server.send(200, "text/plain", "Successfully saved files to SD Card at path: " + uploadPath);
     }
+  }, [](){
+    HTTPUpload &upload = server.upload();
+    if (upload.status == UPLOAD_FILE_START)
+    {
+      uploadError = "";
+      uploadPath = "";
 
-    if(!SD.begin(PIN_CS)){
-      Serial.println("SD Card Mount failed");
-      server.send(500, "text/plain", "Failed to mount SD card, make sure it's inserted");
-      return;
-    }
+      String folder = server.arg("folder");
+      if (folder.length() == 0)
+      {
+        folder = "hw";
+      }
+      if (!folder.startsWith("/"))
+      {
+        folder = "/" + folder;
+      }
 
-    if(!folder.startsWith("/")){
-      folder = "/" + folder;
-    }
+      String filename = upload.filename;
+      if (filename.length() == 0)
+      {
+        filename = "plot.gcode";
+      }
 
-    if(!SD.exists(folder)){
-      if(!SD.mkdir(folder)){
-        Serial.println("Failed to create folder: " + folder);
-        server.send(500, "text/plain", "Failed to create folder on SD card. Make sure it's named something normal");
-        SD.end();
+      if (!SD.begin(PIN_CS))
+      {
+        Serial.println("SD Card Mount failed");
+        uploadError = "Failed to mount SD card, make sure it's inserted";
         return;
       }
-    }
 
-    String fullPath = folder;
-    if(!fullPath.endsWith("/")){
-      fullPath += "/";
-    }
-    fullPath += filename;
+      if (!SD.exists(folder))
+      {
+        if (!SD.mkdir(folder))
+        {
+          Serial.println("Failed to create folder: " + folder);
+          uploadError = "Failed to create folder on SD card. Make sure it's named something normal";
+          SD.end();
+          return;
+        }
+      }
 
-    File file = SD.open(fullPath, FILE_WRITE);
-    if(file){
-      file.print(content);
-      file.close();
-      Serial.println("File successfully written to card: " + fullPath);
-      server.send(200, "text/plain", "Successfully saved files to SD Card at path: " + fullPath);
-      return;
+      String fullPath = folder;
+      if (!fullPath.endsWith("/"))
+      {
+        fullPath += "/";
+      }
+      fullPath += filename;
+
+      uploadPath = fullPath;
+
+      Serial.println("Starting streaming uplaod to: " + fullPath);
+      uploadFile = SD.open(fullPath, FILE_WRITE);
+      if (!uploadFile)
+      {
+        Serial.println("Failed to open file for writing: " + fullPath);
+        uploadError = "Failed to write file to SD Card";
+        SD.end();
+      }
     }
-    else{
-      Serial.println("Failed to open file for writing, make sure you named files/folders appropriately and had normal content: " + fullPath);
-      server.send(400, "Failed to write file to SD card");
+    else if (upload.status == UPLOAD_FILE_WRITE)
+    {
+      if (uploadFile && uploadError.length() == 0)
+      {
+        if (uploadFile.write(upload.buf, upload.currentSize) != upload.currentSize)
+        {
+          Serial.println("Write error during upload");
+          uploadError = "Write error during upload";
+        }
+      }
+    }
+    else if (upload.status == UPLOAD_FILE_END || upload.status == UPLOAD_FILE_ABORTED)
+    {
+      if (uploadFile)
+      {
+        uploadFile.close();
+        Serial.println("Streaming upload finished. Size: " + String(upload.totalSize));
+      }
     }
     SD.end();
-  });
-  server.serveStatic("/fonts/", LittleFS, "/fonts/");
+    }
+});
+server.serveStatic("/fonts/", LittleFS, "/fonts/");
 
-  server.serveStatic("/font_engine.js", LittleFS, "/font_engine.js");
-  
-  server.serveStatic("/initialize_gcode.txt", LittleFS, "/initialize_gcode.txt");
-  server.serveStatic("/end_gcode.txt", LittleFS, "/end_gcode.txt");
+server.serveStatic("/font_engine.js", LittleFS, "/font_engine.js");
 
-  server.enableCORS(true);
-  server.begin();
+server.serveStatic("/initialize_gcode.txt", LittleFS, "/initialize_gcode.txt");
+server.serveStatic("/end_gcode.txt", LittleFS, "/end_gcode.txt");
+
+server.enableCORS(true);
+server.begin();
 }
 
-void loop() {
+void loop()
+{
   server.handleClient();
 }
