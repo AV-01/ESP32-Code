@@ -85,4 +85,6 @@ Everything is handled when you first launch. It'll turn into an Access Point, an
 
 ## Magazine page
 
-Still working on it!
+Check it out!!
+
+<img src="zine_transparent.png"/>
