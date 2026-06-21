@@ -1,0 +1,6 @@
+M302 S0; allow cold moves
+M211 S1; saftey on, stay within machine limits
+G21; set units to millimeters
+G90; set to absolute positioning
+G28; home all axes
+M420 S1; load pre-saved CR-Touch mesh

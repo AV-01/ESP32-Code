@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+    body {
+  font-family:sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 2.5em;
+  color: #111;
+  margin-bottom: 0.5em;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+  font-family: inherit;
+}
+button{
+    margin-top: 10px;
+}
+</style>
+
+<body>
+<h1>Setup Data</h1>
+
+<form action="/save-config" method="POST">
+<label>Gemini API key:</label>
+<input type="password" id="api_key" name="api_key" placeholder="Insert API Key Here"></input>
+
+<label>WiFi SSID</label>
+<input type="text" id="wifi_name" name="wifi_name" placeholder="Insert WiFi SSID Here"></input>
+
+<label>WiFI Password</label>
+<input type="password" id="wifi_password" name="wifi_password" placeholder="Insert WiFI Password Here"></input>
+
+
+<button type="submit">Submit</button>
+
+</form>
+</body>
+</html>

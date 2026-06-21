@@ -1,3 +1,0 @@
-G0 Z10 F3000; bring pen up
-G0 X0 Y0 F3000; return home
-M84; disable stepper motors
